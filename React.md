@@ -31,7 +31,7 @@ setup：处理 Effect 的函数。setup 函数选择性返回一个 清理（cle
 
 每次重新渲染的时候能够缓存计算的结果。
 首次渲染时调用该函数；在之后的渲染中，如果 dependencies 没有发生变化，React 将直接返回相同值。
-判断依赖项是否改变，React 是通过 *Object.is* 来判断的。
+判断依赖项是否改变，React 是通过 _Object.is_ 来判断的。
 
 ### useContext
 
@@ -39,7 +39,7 @@ setup：处理 Effect 的函数。setup 函数选择性返回一个 清理（cle
 
 用法：向组件树深层传递数据。
 
-优化：Context向深层组件传入带有函数的 props ，可以用 useCallback 包装传递的函数，再将传递的 props 用 useMemo 包装传递给深层组件。具体可以看下面的链接。
+优化：Context 向深层组件传入带有函数的 props ，可以用 useCallback 包装传递的函数，再将传递的 props 用 useMemo 包装传递给深层组件。具体可以看下面的链接。
 
 [在传递对象和函数时优化重新渲染](https://zh-hans.react.dev/reference/react/useContext#optimizing-re-renders-when-passing-objects-and-functions)
 
@@ -64,3 +64,113 @@ useImperativeHandle 在子组件中定义，createHandle 是个函数其返回�
 ## 父组件调用子组件方法
 
 子组件中使用 useImperativeHandle 定义暴露的方法，父组件通过 ref.current.definedName() 来调用.
+
+```javascript
+import { useRef, useImperativeHandle } from 'react';
+
+export default function FatherInput() {
+  const ref = useRef(null);
+  return (
+    <div>
+      <button
+        onClick={() => {
+          if (ref.current) {
+            ref.current.focus();
+          }
+        }}
+      >
+        点击
+      </button>
+      <MyInput ref={ref} />
+    </div>
+  );
+}
+
+const MyInput = ({ ref }) => {
+  const inputRef = useRef < HTMLInputElement > null;
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        focus() {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        },
+      };
+    },
+    []
+  );
+  return <input type="text" ref={inputRef} />;
+};
+```
+
+## 监听 form 上的属性
+
+1. 使用 useState ，更新函数触发也伴随 UI 的更新
+2. antd@4.20.0 后新增了 Form.useWatch ，例：Form.useWatch('song', form); 但性能方面上有些困扰，监听一个属性改变，会带动表单整体 UI 更新
+3. Watch 组件，Ant Plus 5（antx）中提供了一个 Watch 组件，专用于监听表单字段变化，并更新局部 UI 的需求。
+
+```jsx
+import { Form, Watch, Input } from 'antx';
+
+const [form] = Form.useForm();
+
+<Form form={form}>
+  <Input label="歌曲" name="song" />
+
+  <Watch name="song">
+    {(songValue) => {
+      // 仅此处 UI 更新，不会每次输入都触发整个组件 re-render
+      return songValue?.length > 0 && <div>歌曲：{songValue}</div>;
+    }}
+  </Watch>
+</Form>;
+```
+
+## useEffect 会执行几次
+
+在开发条件下，开启严格模式，会先调用 cleanup 函数再调用 setup 函数。（如果组件第一个挂在在页面上，会在 cleanup 前调用一次 setup）
+
+## 高阶组件
+
+高阶组件（HOC）是一个接收组件作为参数并返回一个新组件的函数。
+看个例子：
+
+```jsx
+// ------- withLoading.jsx
+// 定义一个简单的高阶组件
+function withLoading(WrappedComponent) {
+  return function WithLoadingComponent({ isLoading, ...props }) {
+    if (isLoading) {
+      return <div>Loading...</div>;
+    } else {
+      return <WrappedComponent {...props} />;
+    }
+  };
+}
+export default withLoading;
+
+// ------- DataListWithLoading.jsx
+// 高阶组件包装
+import withLoading from "./withLoading";
+
+function DataList({ data }) {
+  return (
+    <ul>
+      {data.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+const DataListWithLoading = withLoading(DataList);
+export default DataListWithLoading;
+
+// -----index.js
+// 使用高阶组件
+<DataListWithLoading data={data} isLoading={isLoading} />
+
+```
+
+使用高阶组件，就是将组件一些复用的逻辑，抽离在外层封装成一个函数（demo 中的 withLoading），组件通过参数传递给外层函数，来复用定义在外层函数内的逻辑。
