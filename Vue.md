@@ -53,7 +53,7 @@ const stop = watchEffect((onCleanup) => {}, {
 
 // 返回值，这里的 stop 变量
 // 当不再需要此侦听器时:
-stop()
+stop();
 ```
 
 第一个参数就是要运行的副作用函数。这个副作用函数中的参数也是函数，是用来清理无效的副作用的。清理回调会在该副作用下一次执行前被调用的。
@@ -71,7 +71,7 @@ stop()
 具体使用参数类型定义还是看[官网文档](https://cn.vuejs.org/api/reactivity-core.html#watch)
 
 ```js
-const stop = watch(source, () => {}, {
+const stop = watch(source, (value, oldValue, onCleanup) => {}, {
   // 选项只列了常用的，不是只有这些
   immediate: true, // 在侦听器创建时立即触发回调
   deep: true, // 对象深度监听
@@ -82,24 +82,45 @@ const stop = watch(source, () => {}, {
 
 watch 使用上和 watchEffect 类似。
 
-- 第一个参数是侦听器的源（函数返回值 或 ref 或 reactive响应式对象）
+- 第一个参数是侦听器的源（函数返回值 或 ref 或 reactive 响应式对象）
 - 第二个参数是发生变化时要调用的回调函数
 - 第三个参数选项配置。
 
-``` js
-// P.S. 当直接侦听一个响应式对象时，侦听器会自动启用深层模式 (自己验证一下)
-const state = reactive({ count: 0 })
+```js
+// P.S. 当直接侦听一个响应式对象时，侦听器会自动启用深层模式
+const state = reactive({ count: 0 });
 watch(state, () => {
   /* 深层级变更状态所触发的回调 */
-})
+});
 ```
 
 > 面试考点
 >
-> watch() 和 watchEffect() 区别
+> **watch() 和 watchEffect() 区别**
 >
 > 1. watch 默认是懒执行，不是一进页面就触发的（可以通过配置 immediate: true 来立即执行）。wacthEffect 是立即执行的
->
 > 2. 更加明确是应该由哪个状态触发侦听器重新执行
->
 > 3. 可以访问所侦听状态的前一个值和当前值。
+>
+> **watch 如何监听一个 ref**
+>
+> watch(ref, callback) 或者 wacth(() => ref.value, callback)
+> 监听对象内的属性需要 watch(() => ref.value.xxx, callback)
+
+## computed
+
+计算属性来描述依赖响应式状态的复杂逻辑。在代码结构上也有更好的可读性。
+
+_计算属性 vs 方法_
+计算属性值会基于其响应式依赖被缓存，只有响应式依赖更新才会重新计算。方法就会每次都执行了。
+
+## ref, reactive
+
+两者都是声明响应式变量
+推荐使用 ref() 来声明变量
+
+> reactive() 的局限性
+>
+> - 只能用于对象类型，不能劫持基础数据类型
+> - 不能替换整个对象，第一个引用响应式会丢失
+> - 对解构操作不友好：结构后丢失响应式
