@@ -40,4 +40,3 @@ ctx.body = ctx.query.call + '("nihao")';
 
   刚讲述设置 `Access-Control-Allow-Origin` 可以解决跨域问题，只适用于简单请求。
   复杂请求，浏览器还会先发送 OPTIONS 请求以取得服务器的确认。如：随意添加一个请求头，服务器没有额外的设置 `Access-Control-Allow-Headers` 。浏览器会做跨域拦截，得不到服务器的确认，浏览器不会发出正式请求（真正的请求不会发起到服务器）。
-  跨域状态码？？
