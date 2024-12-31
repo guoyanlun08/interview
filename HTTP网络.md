@@ -26,7 +26,7 @@ ctx.body = ctx.query.call + '("nihao")';
   客户端：发送 http 请求，浏览器会添加 origin 请求头，值为当前发起请求的域名。
   服务端：服务器需要加入 **Access-Control-Allow-Origin** 响应头，指明可以共享数据的域。如：`Access-Control-Allow-Origin: http://localhost`.
   若设置为 `Access-Control-Allow-Origin: *` 则表示可与任意域进行数据共享。
-  跨域请求有分两种 <font color=#42b883 >_简单请求_、_复杂请求_</font>
+  跨域请求有分两种 ==_简单请求_、_复杂请求_==
   同时满足以下两大条件，就属于简单请求：
 
   1. 请求方法是以下三种方法之一：HEAD, GET, POST
