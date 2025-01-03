@@ -43,6 +43,8 @@ Function.prototype.myCall = function (context) {
 
   result = curContext.fn(...args);
 
+  delete curContext.fn;
+
   return result;
 };
 ```
