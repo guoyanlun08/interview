@@ -130,3 +130,48 @@ _计算属性 vs 方法_
 Vue 的事件有 2 种，一种是原生 DOM 事件，一种是用户自定义事件。
 主要是通过 addEventListener 方法进行事件绑定。
 其他详情是有涉及[源码](https://jonny-wei.github.io/blog/vue/vue/vue-event.html#%E5%8E%9F%E7%94%9F-dom-%E4%BA%8B%E4%BB%B6)相关的，笔者深究意义没有多大（就是没看懂），可以自己看下
+
+## Object.defineProperty 和 Proxy
+
+### Object.defineProperty(obj, prop, descriptor)
+
+[使用 demo](./demo/object_defineProperty.js)。
+
+```js
+descriptor -> {
+  value: undefined,// 属性值
+  configurable: false, // 属性描述符能否改变，以及属性能否被删除（通过 delete 关键字）。
+  writable: false, // 值能否被修改。
+  enumerable: false, // 是否为可枚举属性。可枚举代表可以被 for...in 等 API 读取到。
+
+  // get/set 不能和 value/writable 共存，因为它们互相冲突。
+  get: undefined, // getter 函数，当属性被读取时，调用该函数并使用它的返回值作为读取值。
+  set: undefined, // setter 函数，当属性被修改时，设置的新值会传给 setter 函数。
+}
+```
+
+Vue2 使用该方式实现数据响应
+
+### Proxy
+[使用 demo](./demo/proxy.js)。
+
+创建对象的代理。
+
+```js
+new Proxy(target, handler);
+```
+
+Proxy 有更强大的 Api
+
+handler 参数是配置对象，具体看 [MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy#handler_%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%96%B9%E6%B3%95)\
+![handler Api](./imgs/proxy%E7%9A%84handler.png)
+
+### 两者区别
+
+`Object.defineProperty` 拦截的是对象的属性，会改变原对象。`Proxy` 是拦截整个对象，通过 new 生成一个新对象，不会改变原对象。
+
+`Proxy` 有多种拦截拦截方式(上图 handler 配图)。`Object.defineProperty` 监听不到的操作，比如监听数组，监听对象属性的新增，删除等。
+
+**性能上**
+
+- Proxy 的性能通常较 Object.defineProperty 要慢。这是因为 Proxy 代理了整个对象，每个对属性的访问都需要经过代理的拦截器。但实际应用性能问题并不明显，主要是浏览器兼容性问题考虑。
