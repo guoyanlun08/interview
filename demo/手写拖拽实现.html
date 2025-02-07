@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      .app {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: space-around;
+      }
+      .pic-box {
+        width: 20vw;
+        background-color: antiquewhite;
+      }
+      .res-box {
+        width: 70vw;
+        background-color: #ccc;
+        display: flex;
+      }
+
+      .pic-box .drag-item {
+        width: 100px;
+      }
+
+      .res-box .drag-item {
+        width: 200px;
+        height: 200px;
+        margin-right: 10px;
+      }
+
+      .dragging-style {
+        position: absolute;
+        z-index: 9999;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="pic-box">
+        <img class="drag-item" src="../imgs/commit顺序图.png" alt="" />
+      </div>
+      <div class="res-box"></div>
+    </div>
+    <script>
+      /*
+        思路，我们需要知道鼠标的三个事件，分别是 mousedown，mousemove，mouseup ，
+        当 mousedown 的时候，克隆一个绝对定位的元素，并标识下"拖拽中"的状态，
+        接着在 mousemove 中改变元素的 left, top 值，
+        在 mouseup appendChild() 元素
+      */
+
+      /** 拖拽标识 */
+      let dragging = false;
+      /** 拖拽克隆出的元素 */
+      let cloneEl = null;
+      let initDragData = {
+        offsetX: 0, // mousedown 时，clone 元素内的的偏移量
+        offsetY: 0,
+      };
+      const picBox = document.getElementsByClassName('pic-box')[0];
+      const resBox = document.getElementsByClassName('res-box')[0];
+
+      /** mousedown 事件 */
+      picBox.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (e.target.classList.contains('drag-item') && !dragging) {
+          dragging = true;
+          cloneEl = e.target.cloneNode(true);
+          cloneEl.classList.add('dragging-style');
+          cloneEl.style.opacity = 0;
+
+          initDragData = {
+            ...initDragData,
+            offsetX: e.offsetX,
+            offsetY: e.offsetY,
+          };
+          e.target.parentElement.appendChild(cloneEl);
+        }
+      });
+
+      /** mousemove 事件 */
+      window.addEventListener('mousemove', (e) => {
+        if (dragging && cloneEl) {
+          cloneEl.style.opacity = 1;
+          cloneEl.style.left = `${e.clientX - initDragData.offsetX}px`;
+          cloneEl.style.top = `${e.clientY - initDragData.offsetY}px`;
+        }
+      });
+
+      /** mouseup 事件 */
+      window.addEventListener('mouseup', (e) => {
+        if (cloneEl && dragging) {
+          /** 元素边缘触碰到就可以拖拽 */
+          const isDragZone = cloneEl.offsetLeft + cloneEl.offsetWidth > resBox.offsetLeft;
+
+          if (isDragZone) {
+            const newEl = cloneEl.cloneNode(true);
+            newEl.classList.remove('dragging-style');
+
+            resBox.appendChild(newEl);
+          }
+          dragging = false;
+          cloneEl.remove();
+        }
+      });
+    </script>
+  </body>
+</html>

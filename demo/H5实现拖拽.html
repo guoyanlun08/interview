@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      #app {
+        display: flex;
+        justify-content: space-between;
+      }
+      #dragZone {
+        width: 300px;
+        height: 400px;
+      }
+      #dragZone p {
+        background-color: skyblue;
+        margin: 4px;
+      }
+      #dropZone {
+        width: 500px;
+        height: 500px;
+        border: 4px solid black;
+      }
+      #dropZone p {
+        background-color: aquamarine;
+        margin: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- 拖拽区域 -->
+      <div id="dragZone">
+        <p id="p1" draggable="true">第一条数据</p>
+        <p id="p2" draggable="true">第二条数据</p>
+      </div>
+      <!-- 放置区域 -->
+      <div id="dropZone"></div>
+    </div>
+    <script>
+      /**
+       * H5 拖拽事件概念
+       * 拖动事件：dragstart、drag、dragend
+       * 放置事件：dragenter、dragover、dragleave、drop
+       *
+       * 拖拽事件流：当拖动一个元素放置到目标元素上的时候将会按照如下顺序依次触发 dragstart->drag->dragenter->dragover->drop->dragend
+       */
+
+      const dragZone = document.querySelector('#dragZone');
+      const dropZone = document.querySelector('#dropZone');
+
+      dragZone.addEventListener('dragstart', (e) => {
+        console.log('[dragstart 事件] draggable 为 true 才会触发', e.target.id);
+
+        e.dataTransfer.setData('id', e.target.id);
+      });
+
+      dragZone.addEventListener('drag', (e) => {
+        // console.log('[drag 事件] 开始拖拽元素后触发（每隔几百毫秒就会被触发一次）', e);
+      });
+
+      dragZone.addEventListener('dragend', (e) => {
+        console.log('[dragend 事件] 拖放操作结束时触发', e);
+      });
+
+      dropZone.addEventListener('dragenter', (e) => {
+        console.log('[dragenter 事件] 拖拽元素进入一个有效的放置目标时触发', e);
+
+        dropZone.style.borderColor = 'blue'; // 可视化反馈
+      });
+
+      dropZone.addEventListener('dragleave', (e) => {
+        console.log('[dragleave 事件] 拖拽元素离开放置目标时触发', e);
+        dropZone.style.borderColor = '#ccc'; // 恢复边框颜色
+      });
+
+      dropZone.addEventListener('dragover', (e) => {
+        // console.log('[dragover 事件] 拖拽元素被拖进一个有效的放置目标时（每几百毫秒）触发', e);
+        // 默认地，无法将数据/元素放置到其他元素中。如果需要设置允许放置，我们必须阻止对元素的默认处理方式。
+        e.preventDefault();
+
+        dropZone.style.borderColor = 'blue'; // 可视化反馈
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        // P.S. 没有 dragover 事件中的 e.preventDefault(); 是不会触发该 drop 事件的。
+        console.log('[drop 事件] 拖拽元素被放置到有效的放置目标上时触发', e);
+
+        const dragItem = document.querySelector(`#${e.dataTransfer.getData('id')}`);
+        dropZone.appendChild(dragItem);
+
+        dropZone.style.borderColor = '#ccc';
+      });
+    </script>
+  </body>
+</html>
