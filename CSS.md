@@ -22,7 +22,7 @@ _详细_
 >
 > 如何理解：
 >
-> - 子元素设置了 display: blcok || display: inline 属性，自身的表现会像个 inline-block 元素。这就是对自身影响失效.
+> - 子元素设置了 display: block || display: inline 属性，自身的表现会像个 inline-block 元素。这就是对自身影响失效.
 > - 子元素也设置了 flex 布局, 子元素的内容依然会受到它 flex 布局的影响.
 
 **flex-item 会有下列行为:**
